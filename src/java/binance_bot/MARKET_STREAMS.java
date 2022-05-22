@@ -7,15 +7,18 @@ package binance_bot;
 
    
 import com.binance.api.client.BinanceApiClientFactory;
+import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.BinanceApiWebSocketClient;
+import com.binance.api.client.domain.account.Account;
+import com.binance.api.client.domain.account.AssetBalance;
 import com.binance.api.client.domain.event.AllMarketTickersEvent;
 
   
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -47,6 +50,20 @@ public class MARKET_STREAMS extends Thread implements AutoCloseable {
         public static boolean botRUNINNG=false;
        
       
+        
+        
+        
+        public static JSONObject winnersBYCOUNTandTIME   =  new JSONObject();
+         
+       public static String API="nz3qvegcRSoIssmdoG6QGlwozRPIaPkgFbxppm7hsUKJP9VujEqhV144lRyAlVG9";
+        public static String SECRET="dTKDi76RghJP4trBtURudet4QYwfNqrW7mploVlzM7nHurSQ5bZLIcJkv8BQBWgj";
+      public static final long DEFAULT_RECEIVING_WINDOW = 5_000L;
+        
+        public static JSONObject myBALANCES   =  new JSONObject();
+       
+      
+      
+      
      public MARKET_STREAMS(){ //MARKET_STREAMS.myBOT=  new SHARED_DATA();
      
      System.out.println("STATUS : "+MARKET_STREAMS.isBOTrunning());
@@ -74,8 +91,7 @@ public class MARKET_STREAMS extends Thread implements AutoCloseable {
  
  public static void STARTCLIENT(){
  
-      
-         
+    
       client = BinanceApiClientFactory.newInstance().newWebSocketClient();
  Date myTIMEnow=new Date();
     coinsSTART= String.valueOf(myTIMEnow.getTime()  );
@@ -154,13 +170,80 @@ onAllMarketTickersEvent = client.onAllMarketTickersEvent((List<AllMarketTickersE
         }
                 /* {  } */
         );
- 
+ /*
+    client.onUserDataUpdateEvent(listenKey, response -> {
+            System.out.println(response);
+          if (response.getEventType() == UserDataUpdateEventType.ACCOUNT_UPDATE) {
+    AccountUpdateEvent accountUpdateEvent = response.getAccountUpdateEvent();
     
+    // Print new balances of every available asset
+    System.out.println(accountUpdateEvent.getBalances());
+  } else {
+    OrderTradeUpdateEvent orderTradeUpdateEvent = response.getOrderTradeUpdateEvent();
+    
+    // Print details about an order/trade
+    System.out.println(orderTradeUpdateEvent);
+
+    // Print original quantity
+    System.out.println(orderTradeUpdateEvent.getOriginalQuantity());
+
+    // Or price
+    System.out.println(orderTradeUpdateEvent.getPrice());
+  }
+});
+
+
+*/
+ 
+ 
+ }
+ 
+ public static JSONObject getBALANCE(){
+  JSONObject thisBALANCES=new JSONObject();
+    BinanceApiClientFactory factoryNOW = BinanceApiClientFactory.newInstance(API, SECRET);
+    BinanceApiRestClient clientNOW = factoryNOW.newRestClient(); 
+       // First, we obtain a listenKey which is required to interact with the user data stream
+  //  String listenKey = clientNOW.startUserDataStream();
+
+    // Then, we open a new web socket client, and provide a callback that is called on every update
+    //BinanceApiWebSocketClient webSocketClient = factory.newWebSocketClient();
+
+    
+    // Get account balances
+    Account account = clientNOW.getAccount(DEFAULT_RECEIVING_WINDOW, System.currentTimeMillis());
+    
+    List<AssetBalance> myBALANCESNOW=new ArrayList<>();
+    
+    myBALANCESNOW=account.getBalances();
+    //System.out.println(account.getBalances());
+    for(int x=0;x<myBALANCESNOW.size();x++){
+        AssetBalance thisASSET=(AssetBalance) myBALANCESNOW.get(x);
+      //  System.out.println(thisASSET);
+        
+        if(
+                (Float.parseFloat(thisASSET.getFree())>0  ) || 
+                (Float.parseFloat(thisASSET.getLocked())>0)
+           ){
+            
+            JSONObject thisASSESjson=new JSONObject();
+            thisASSESjson.put("ASSETT", thisASSET.getAsset());
+            thisASSESjson.put("FREE", thisASSET.getFree());
+            thisASSESjson.put("LOCKED", thisASSET.getLocked());
+            
+            thisBALANCES.put(thisASSET.getAsset(), thisASSESjson);
+      //  System.out.println("ASSETT : "+thisASSET.getAsset());
+    //    System.out.println("FREE : "+thisASSET.getFree());
+      //  System.out.println("LOCKED : "+thisASSET.getLocked());
+        }
+    }
+  
+  return thisBALANCES;
  }
  
      public static void main(String[] args)  throws InterruptedException, IOException {
        
          MARKET_STREAMS thisBOT=new MARKET_STREAMS();
+      MARKET_STREAMS.myBALANCES=   getBALANCE();
         if(thisBOT.isBOTrunning()){System.out.println("RUNNING");}
      else{System.out.println("NOT RUNNING");
          STARTCLIENT();
@@ -172,7 +255,8 @@ onAllMarketTickersEvent = client.onAllMarketTickersEvent((List<AllMarketTickersE
       
       
      public static void showHTML(List<AllMarketTickersEvent> myRESPONSE) {    //AllMarketTickersEvent   TickerEvent
-        
+      // myBALANCES=getBALANCE();
+       // System.out.println(thisBAL);
          try{
             for(int x=0;x<myRESPONSE.size();x++){
             // myRESPONSE.get(x).

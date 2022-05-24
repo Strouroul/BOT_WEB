@@ -25,12 +25,16 @@
         
             
 try{
-       if(MARKET_STREAMS.my_CLIENT!=null){out.println("Already Running");}
-           else{out.println("NOT Running");}
+       if(MARKET_STREAMS.my_CLIENT!=null){out.println("Already Running");
+       
+       }
+           else{out.println("NOT Running");
+        MARKET_STREAMS thisBOT=new MARKET_STREAMS();
+        thisBOT.run();
+       }
             out.println(MARKET_STREAMS.botRUNNING);
             
-     MARKET_STREAMS thisBOT=new MARKET_STREAMS();
-        thisBOT.run();
+    
 }
 catch(Exception ex){
  out.println(ex.getMessage());

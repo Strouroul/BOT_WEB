@@ -6,19 +6,28 @@
 package binance_bot;
 
    
+import com.binance.api.client.BinanceApiCallback;
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.BinanceApiWebSocketClient;
 import com.binance.api.client.domain.account.Account;
 import com.binance.api.client.domain.account.AssetBalance;
+import com.binance.api.client.domain.event.AccountUpdateEvent;
 import com.binance.api.client.domain.event.AllMarketTickersEvent;
+import com.binance.api.client.domain.event.OrderTradeUpdateEvent;
+import com.binance.api.client.domain.event.UserDataUpdateEvent.UserDataUpdateEventType;
+import java.io.BufferedReader;
 
   
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -34,11 +43,14 @@ public class MARKET_STREAMS extends Thread implements AutoCloseable {
     
     
    public static    Closeable onAllMarketTickersEvent=null;
-    
+     public static    Closeable WSuser=null;
+  
      public static MARKET_STREAMS my_CLIENT =null;
      
      public static JSONObject coinsDATA  =new JSONObject();
      public static String coinsSTART="";
+     public static JSONObject myCOINbinanceINFO=new JSONObject();
+     
      
      public static BinanceApiWebSocketClient client =null;
        public static Thread client_THREAD=null;
@@ -95,109 +107,136 @@ public class MARKET_STREAMS extends Thread implements AutoCloseable {
       client = BinanceApiClientFactory.newInstance().newWebSocketClient();
  Date myTIMEnow=new Date();
     coinsSTART= String.valueOf(myTIMEnow.getTime()  );
-System.out.println("STARTED ");
- 
-onAllMarketTickersEvent = client.onAllMarketTickersEvent((List<AllMarketTickersEvent> response) -> {
-         
-            //System.out.println(response.getClass());
-           // System.out.println(response);
-              try{
-                     botRUNNING=true;
+     System.out.println("STARTED ");
+ onAllMarketTickersEvent= client.onAllMarketTickersEvent( (List<AllMarketTickersEvent> response) -> {           //(List<AllMarketTickersEvent> response) -> {
+      try{
+            botRUNNING=true;
                showHTML(response);
-              } catch(Exception ex){System.out.println( ex.getMessage());botRUNNING=false;
+         } catch(Exception ex){System.out.println( ex.getMessage());botRUNNING=false;
               try{ onAllMarketTickersEvent.close();
-              }
+                   }
               catch(Exception exx){System.out.println( exx.getMessage());}
              
-           }
-           if(botRUNNING){}
-           else{
-           
-           }
-            
-           /*
-            AllMarketTickersEvent   allMarketTickersEvent=null;
-            try{
-            //  showHTML(response);
-            /////           TickerEvent        AllMarketTickersEvent
-            for (Iterator iter = response.iterator(); iter.hasNext(); )  {
-            ObjectMapper mapper = new ObjectMapper();
-            allMarketTickersEvent  = mapper.convertValue(iter.next(), AllMarketTickersEvent.class);
-            if(allMarketTickersEvent!=null){//System.out.println("GOOD");
-            boolean toCHECKcoin=false;
-            String cleanSYMBOL=null;
-            if(allMarketTickersEvent.getSymbol().toLowerCase().contains("usdt"))
-            {toCHECKcoin=true;
-            cleanSYMBOL=allMarketTickersEvent.getSymbol().toLowerCase().replace("usdt","").toUpperCase();
-            }
-            
-            
-            
-            
-            if(toCHECKcoin){
-            if( coinsDATA.has(cleanSYMBOL)){
-            COIN thisCOINtoUPDATE=(COIN)  coinsDATA.get(cleanSYMBOL);
-            thisCOINtoUPDATE.UPDATE_COIN((AllMarketTickersEvent)allMarketTickersEvent);
-            coinsDATA.put(cleanSYMBOL, thisCOINtoUPDATE);
-            }
-            else{
-            //   System.out.println("getBestAskPrice  :"+thisTICKERevents.getBestAskPrice());
-            //   System.out.println("getBestBidPrice  :"+thisTICKERevents.getBestBidPrice());
-            //    System.out.println("getPriceChange  :"+thisTICKERevents.getPriceChange());
-            coinsDATA.put(cleanSYMBOL,new COIN((AllMarketTickersEvent)allMarketTickersEvent));
-            }
-            COIN thisCOINtoUPDATE=(COIN) coinsDATA.get(cleanSYMBOL);
-            System.out.println("SYMBOL : "+thisCOINtoUPDATE.Symbol +"   " //+thisCOINtoUPDATE.NowPrice
-            +thisCOINtoUPDATE.STATS
-            +thisCOINtoUPDATE.INTERVALS
-            );
-            }
-            
-            }
-            }
-            
-            
-            
-            
-            
-            }
-            catch(Exception ex){ System.out.println(ex.getMessage());}
-            
-            */
+           }    
             
          
             
         }
                 /* {  } */
         );
- /*
-    client.onUserDataUpdateEvent(listenKey, response -> {
+
+ 
+   
+   WSuser =   client.onUserDataUpdateEvent(API, response -> {
             System.out.println(response);
-          if (response.getEventType() == UserDataUpdateEventType.ACCOUNT_UPDATE) {
-    AccountUpdateEvent accountUpdateEvent = response.getAccountUpdateEvent();
-    
-    // Print new balances of every available asset
-    System.out.println(accountUpdateEvent.getBalances());
-  } else {
-    OrderTradeUpdateEvent orderTradeUpdateEvent = response.getOrderTradeUpdateEvent();
-    
-    // Print details about an order/trade
-    System.out.println(orderTradeUpdateEvent);
+    if (response.getEventType() == UserDataUpdateEventType.ACCOUNT_UPDATE) {
+        AccountUpdateEvent accountUpdateEvent = response.getAccountUpdateEvent();
+        // Print new balances of every available asset
+       // System.out.println(accountUpdateEvent.getBalances()); 
+        List<AssetBalance> myBALANCESNOWHERE=accountUpdateEvent.getBalances();
+        //System.out.println(account.getBalances());
+        for(int x=0;x<myBALANCESNOWHERE.size();x++){
+            AssetBalance thisASSET=(AssetBalance) myBALANCESNOWHERE.get(x);
+          //  System.out.println(thisASSET);
 
-    // Print original quantity
-    System.out.println(orderTradeUpdateEvent.getOriginalQuantity());
+            if(
+                    (Float.parseFloat(thisASSET.getFree())>0  ) || 
+                    (Float.parseFloat(thisASSET.getLocked())>0)
+               ){
 
-    // Or price
-    System.out.println(orderTradeUpdateEvent.getPrice());
-  }
-});
+                JSONObject thisASSESjson=new JSONObject();
+                thisASSESjson.put("ASSETT", thisASSET.getAsset());
+                thisASSESjson.put("FREE", thisASSET.getFree());
+                thisASSESjson.put("LOCKED", thisASSET.getLocked());
 
+                myBALANCES.put(thisASSET.getAsset(), thisASSESjson);
+          //  System.out.println("ASSETT : "+thisASSET.getAsset());
+        //    System.out.println("FREE : "+thisASSET.getFree());
+          //  System.out.println("LOCKED : "+thisASSET.getLocked());
+            }else{
+                if(myBALANCES!=null){
+                    if(myBALANCES.has(thisASSET.getAsset())){
+                        myBALANCES.remove(thisASSET.getAsset());
+                    }
+                }
+            }
+        }
+        System.out.println("myBALANCES : "+myBALANCES );
+      } else {
+        OrderTradeUpdateEvent orderTradeUpdateEvent = response.getOrderTradeUpdateEvent();
 
-*/
+        // Print details about an order/trade
+        System.out.println(orderTradeUpdateEvent);
+
+        // Print original quantity
+        System.out.println(orderTradeUpdateEvent.getOriginalQuantity());
+
+        // Or price
+        System.out.println(orderTradeUpdateEvent.getPrice());
+      }
+    });
+
+ 
  
  
  }
- 
+ public static void sendGETbinanceJSON() throws IOException {
+           String USER_AGENT = "Mozilla/5.0";
+          String GET_URL =  "https://api.binance.com/api/v3/exchangeInfo";
+		URL obj = new URL(GET_URL);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("GET");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		int responseCode = con.getResponseCode();
+		System.out.println("GET Response Code :: " + responseCode);
+		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			// print result
+			//System.out.println(response.toString());
+                        String myRESP=null;
+                        if( response.toString()!=null){
+                        JSONObject cleanRESPONSEjson=null;
+                       myRESP= response.toString();
+                      
+                       JSONObject allCOINSinfo =new JSONObject(myRESP);
+                       for(int x=0;x<allCOINSinfo.getJSONArray("symbols").length();x++){
+                           String thisSYMBOL=allCOINSinfo.getJSONArray("symbols").getJSONObject(x).getString("baseAsset");
+                           if(myCOINbinanceINFO.has(thisSYMBOL)){
+                            JSONArray thisQUTOES=myCOINbinanceINFO.getJSONArray(thisSYMBOL);
+                           thisQUTOES.put(allCOINSinfo.getJSONArray("symbols").getJSONObject(x).getString("quoteAsset"));
+                             myCOINbinanceINFO.put(thisSYMBOL, thisQUTOES);
+                           }
+                           else{
+                           
+                               
+                               JSONArray thisQUTOES=new JSONArray();
+                               thisQUTOES.put(allCOINSinfo.getJSONArray("symbols").getJSONObject(x).getString("quoteAsset"));
+                             myCOINbinanceINFO.put(thisSYMBOL, thisQUTOES);
+                             
+                           }
+                       }
+                        
+                        
+                       
+                       
+                      
+                        }
+                         
+                        //System.out.println(response.toString());
+		} else {
+			System.out.println("GET request not worked");
+		}
+
+	} 
  public static JSONObject getBALANCE(){
   JSONObject thisBALANCES=new JSONObject();
     BinanceApiClientFactory factoryNOW = BinanceApiClientFactory.newInstance(API, SECRET);
@@ -244,6 +283,12 @@ onAllMarketTickersEvent = client.onAllMarketTickersEvent((List<AllMarketTickersE
        
          MARKET_STREAMS thisBOT=new MARKET_STREAMS();
       MARKET_STREAMS.myBALANCES=   getBALANCE();
+      try{
+       sendGETbinanceJSON();
+      }
+      catch(Exception ex){
+      }
+     
         if(thisBOT.isBOTrunning()){System.out.println("RUNNING");}
      else{System.out.println("NOT RUNNING");
          STARTCLIENT();

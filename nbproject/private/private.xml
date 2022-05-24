@@ -3,11 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/web/WEB-INF/ADMIN/STOP_MAIN_WORKER.jsp</file>
-            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/web/WEB-INF/ADMIN/CHECK_MAIN_TICKER_STATUS.jsp</file>
+            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/WS/MAIN_WORKER.java</file>
             <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/binance_bot/MARKET_STREAMS.java</file>
-            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/web/WEB-INF/layout/_menu.jsp</file>
-            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/web/WEB-INF/ADMIN/START_MAIN_WORKER.jsp</file>
         </group>
     </open-files>
 </project-private>

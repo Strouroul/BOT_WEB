@@ -25,7 +25,11 @@
    
    
 </div>
-    
+     <div style="padding: 5px;"> 
+   <a href="${pageContext.request.contextPath}/RESET_COINS_DATA">RESET_COINS_DATA</a>  
+   
+   
+</div>
      
    <!--  
     <div style="padding: 5px;"> 

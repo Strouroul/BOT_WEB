@@ -5,9 +5,19 @@
  */
 package EGIT;
 
+import static EGIT.CrunchifyLoadGithubContent.getINFO;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
@@ -21,6 +31,9 @@ import org.eclipse.egit.github.core.service.DataService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.json.JSONObject;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
 
 /**
  *
@@ -34,10 +47,19 @@ public class newEGIT {
       public static   DataService dataService =    null;
 	
 	
-	public static void main(String[] args){
+	public static void main(String[] args) throws IOException{
+		
+		//GitHub github   = new GitHubBuilder().withPassword("my_user", "my_passwd").build();
+		
+		
+		
+		
 		//Basic authentication
-		client.setOAuth2Token("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");	
-	client.setUserAgent("GitMiner ( version: " + "2.35" + ", https://github.com/pridkett/gitminer, based off egit, user: " + "Strouroul" + " email: " + "" + " )");
+		 client.setOAuth2Token("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");	
+		
+		
+		 
+	client.setUserAgent("GitMan ( version: " + "2.35" + ", https://github.com/pridkett/gitminer, based off egit, user: " + "Strouroul" + " email: " + "kool_egypt@hotmail.com" + " )");
 	
 	   commitService = new CommitService(client);
         dataService = new DataService(client);
@@ -66,13 +88,50 @@ public class newEGIT {
 									/* String fileConent = new String(
 										 Base64.decodeBase64( thisCONT.getContent().getBytes()));*/
 	                                             /*    System.out.println(dataService.getCommit(thisREPO, thisCONT.getSha()));*/
+						     
+						     JSONObject myINFO=null; 
+						     
+						     if( thisCONT.getName().equals("index.html")&&
+							     thisCONT.getType().equals("file")){
+						      try{
+						     String githubROOT="https://raw.githubusercontent.com"; 
+							String githubUSER="Strouroul";
+							String gitREPO=thisREPO.getName(); 
+							String fileNAME=thisCONT.getPath();
+							String link = githubROOT+"/"+githubUSER+"/"+gitREPO+"/master/"+fileNAME;
+		 
+							myINFO=  getINFO(link);
+						       //  System.out.println(myINFO);
+							 if(myINFO.getBoolean("STATUS")){}
+							 else{
+
+							 }
+							 
+							  if(myINFO!=null){
 								   System.out.println("getName : "+thisCONT.getName() +
 								  "     getPath : "+thisCONT.getPath()+
 								  "     getType : "+thisCONT.getType()+
 								  "     getSize : "+thisCONT.getSize() +
-								 "     getContent : "+thisCONT.getContent()+
+								 "     getContent : "+myINFO.getString("FILE_DATA")+
 									    "     getSha : "+thisCONT.getSha()
 								  ); 
+							}
+						     }
+						     catch(Exception ex){}
+						     
+						     }
+						     else{
+						      System.out.println("getName : "+thisCONT.getName() +
+								  "     getPath : "+thisCONT.getPath()+
+								  "     getType : "+thisCONT.getType()+
+								  "     getSize : "+thisCONT.getSize() +
+								 
+									    "     getSha : "+thisCONT.getSha()
+								  ); 
+						     }
+						    
+						    
+								
 								 }
 
 								 if(thisCONT.getType().equals(RepositoryContents.TYPE_DIR)){
@@ -116,8 +175,56 @@ public class newEGIT {
 		}
 		
 		}
-	
-	
+	public static JSONObject getINFO(String myLINK){
+		JSONObject myRETURN=new JSONObject();
+		myRETURN.put("STATUS", false);
+		try { 
+			
+			URL crunchifyUrl = new URL(myLINK);
+			HttpURLConnection crunchifyHttp = (HttpURLConnection) crunchifyUrl.openConnection();
+			Map<String, List<String>> crunchifyHeader = crunchifyHttp.getHeaderFields();
+			
+			// If URL is getting 301 and 302 redirection HTTP code then get new URL link.
+			// This below for loop is totally optional if you are sure that your URL is not getting redirected to anywhere
+			for (String header : crunchifyHeader.get(null)) {
+				if (header.contains(" 302 ") || header.contains(" 301 ")) {
+					myLINK = crunchifyHeader.get("Location").get(0);
+					crunchifyUrl = new URL(myLINK);
+					crunchifyHttp = (HttpURLConnection) crunchifyUrl.openConnection();
+					crunchifyHeader = crunchifyHttp.getHeaderFields();
+				}
+			}
+			InputStream crunchifyStream = crunchifyHttp.getInputStream();
+			String crunchifyResponse = GET_FILE_AS_STRING(crunchifyStream);
+			//System.out.println(crunchifyResponse);
+			myRETURN.put("FILE_DATA", crunchifyResponse);
+			myRETURN.put("STATUS", false);
+		} catch (Exception ex) {
+			 System.out.println(ex.getMessage());
+		}
+		
+		return myRETURN;
+	}
+	  // ConvertStreamToString() Utility - we name it as crunchifyGetStringFromStream()
+	private static String GET_FILE_AS_STRING(InputStream crunchifyStream) throws IOException {
+		if (crunchifyStream != null) {
+			Writer crunchifyWriter = new StringWriter();
+ 
+			char[] crunchifyBuffer = new char[2048];
+			try {
+				Reader crunchifyReader = new BufferedReader(new InputStreamReader(crunchifyStream, "UTF-8"));
+				int counter;
+				while ((counter = crunchifyReader.read(crunchifyBuffer)) != -1) {
+					crunchifyWriter.write(crunchifyBuffer, 0, counter);
+				}
+			} finally {
+				crunchifyStream.close();
+			}
+			return crunchifyWriter.toString();
+		} else {
+			return "No Contents";
+		}
+	}
 	public static List<RepositoryContents> getREPOfiles( org.eclipse.egit.github.core.Repository repository, String path){
 	ContentsService contentService = new ContentsService(client);
 	List<RepositoryContents> files =new ArrayList<>();

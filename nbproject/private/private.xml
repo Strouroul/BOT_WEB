@@ -3,8 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/EGIT/newEGIT.java</file>
             <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/WS/MAIN_WORKER.java</file>
             <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/SHARED_DATA/SHOWDATA.java</file>
+            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/GITHUB/GITutils.java</file>
+            <file>file:/D:/JAVA_CHECKOUT/BOT_WEB/src/java/GITHUB/mainGITbot.java</file>
         </group>
     </open-files>
 </project-private>

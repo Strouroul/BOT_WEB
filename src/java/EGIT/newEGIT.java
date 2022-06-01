@@ -25,10 +25,12 @@ import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.RepositoryContents;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import static org.eclipse.egit.github.core.client.IGitHubConstants.CHARSET_UTF8;
 import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.ContentsService;
 import org.eclipse.egit.github.core.service.DataService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+import org.eclipse.egit.github.core.util.EncodingUtils;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.json.JSONObject;
@@ -49,13 +51,12 @@ public class newEGIT {
 	
 	public static void main(String[] args) throws IOException{
 		
-		//GitHub github   = new GitHubBuilder().withPassword("my_user", "my_passwd").build();
+		// GitHub github   = new GitHubBuilder().withPassword("my_user", "my_passwd").build();
 		
-		
-		
+		 
 		
 		//Basic authentication
-		 client.setOAuth2Token("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");	
+		 client.setOAuth2Token("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");	
 		
 		
 		 
@@ -91,9 +92,25 @@ public class newEGIT {
 						     
 						     JSONObject myINFO=null; 
 						     
-						     if( thisCONT.getName().equals("index.html")&&
+						     if( //thisCONT.getName().equals("index.html")&&
 							     thisCONT.getType().equals("file")){
-						      try{
+						      
+							     String myCONTENT=  new String(EncodingUtils.fromBase64(
+						  dataService.getBlob(thisREPO, thisCONT.getSha()) .getContent()),CHARSET_UTF8);
+								    
+							     System.out.println("getName : "+thisCONT.getName() +
+								  "     getPath : "+thisCONT.getPath()+
+								  "     getType : "+thisCONT.getType()+
+								  "     getSize : "+thisCONT.getSize() +
+								// "     getContent : "+myINFO.getString("FILE_DATA")+
+									   
+									   "OTHER CON : "+
+								    myCONTENT+ 
+					 	// Base64.decodeBase64( myCONTENT	 .getBytes()  ) +
+									    "     getSha : "+thisCONT.getSha()
+								  );  
+							     
+							  /*   try{
 						     String githubROOT="https://raw.githubusercontent.com"; 
 							String githubUSER="Strouroul";
 							String gitREPO=thisREPO.getName(); 
@@ -108,16 +125,10 @@ public class newEGIT {
 							 }
 							 
 							  if(myINFO!=null){
-								   System.out.println("getName : "+thisCONT.getName() +
-								  "     getPath : "+thisCONT.getPath()+
-								  "     getType : "+thisCONT.getType()+
-								  "     getSize : "+thisCONT.getSize() +
-								 "     getContent : "+myINFO.getString("FILE_DATA")+
-									    "     getSha : "+thisCONT.getSha()
-								  ); 
+								  
 							}
 						     }
-						     catch(Exception ex){}
+						     catch(Exception ex){}*/
 						     
 						     }
 						     else{

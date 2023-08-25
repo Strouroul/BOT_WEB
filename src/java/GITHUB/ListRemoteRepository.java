@@ -54,7 +54,7 @@ public class ListRemoteRepository {
                .setTags(true)
                  
 	.setRemote(REMOTE_URL)
-            .setCredentialsProvider(new UsernamePasswordCredentialsProvider("Strouroul", "Shaytham123!@"));
+            .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", ""));
 	
 	   Repository repository =myGIT.getRepository();
 	try{listRepositoryContents(repository );}
